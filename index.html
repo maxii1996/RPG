@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor JSON</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+
+</head>
+<body class="dark-mode">
+    <div class="container mt-4">
+        <button id="toggleDarkMode" aria-label="Cambiar tema"><i class="fas fa-sun"></i></button>
+
+        <div class="form-group">
+            
+            
+            
+
+            <label for="fileNameInput">Nombre del archivo:</label>
+            <button onclick="addNewTab()" class="btn btn-secondary"><i class="fas fa-plus"></i> Agregar Pestaña</button>
+            
+            <div class="input-group">
+                <input type="text" id="fileNameInput" class="form-control" value="">
+                <div class="input-group-append">
+                    <button class="save-changes-btn btn btn-primary btn-lg" onclick="saveChanges()" style="display: none;" disabled>
+                        <i class="fas fa-download"></i> Compilar y Descargar
+                    </button>
+               </div>
+            </div>
+           
+            <div class="file-input-container">
+                <input type="file" id="jsonFileInput" accept=".json">
+                <label for="jsonFileInput"><i class="fas fa-upload"></i>Cargar archivo de Traducción</label>
+              </div>
+
+              <button id="correctSpellingBtn" class="modern-button">
+                <i class="fas fa-spell-check"></i>
+            </button>
+
+            
+
+        </div>   
+        <div id="tabs">
+
+          
+        
+        </div>
+          
+        <textarea id="jsonResult" readonly style="display: none;"></textarea>
+
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+ 
+
+    <script src="script.js"></script>
+
+</body>
+</html>
