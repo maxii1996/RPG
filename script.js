@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", function() {
         correctSpellingButton.addEventListener("click", correctSpelling);
     }
 
+    event.preventDefault();
+    event.returnValue = '';
+
 
     function toggleDarkMode() {
         const body = document.body;
@@ -49,12 +52,23 @@ const jsonResult = document.getElementById("jsonResult");
 
 function loadJson(json) {
     tabsContainer.innerHTML = "";
+    
+    let tabsData = {};
+
     for (const key in json) {
+        let [tabName, fieldName] = key.split(".");
+        if (!(tabName in tabsData)) {
+            tabsData[tabName] = {};
+        }
+        tabsData[tabName][fieldName] = json[key];
+    }
+
+    for (const tabName in tabsData) {
         const tab = addNewTab();
         const tabTitle = tab.querySelector("input[type=text]");
-        tabTitle.value = key;
+        tabTitle.value = tabName;
 
-        const tabContent = json[key];
+        const tabContent = tabsData[tabName];
         let rowNum = 1;
         for (const fieldKey in tabContent) {
             const fieldRow = addNewField(tab);
@@ -65,11 +79,9 @@ function loadJson(json) {
             rowNum++; 
         }
     }
+
     updateFileName(jsonFileInput.value);
 }
-
-
-
 
 
 
@@ -148,7 +160,7 @@ function moveRowPrompt(btn) {
 function copyField(btn) {
     const fieldRow = btn.parentElement;
     const tabTitle = fieldRow.closest('.tab').querySelector('input[type="text"]').value;
-    const subcategory = fieldRow.querySelector('input[type="text"]:nth-child(2)').value; // Corregir el índice a 2
+    const subcategory = fieldRow.querySelector('input[type="text"]:nth-child(2)').value;
     const copyText = `\${${tabTitle}.${subcategory}}`;
     navigator.clipboard.writeText(copyText);
     const originalColor = fieldRow.style.backgroundColor;
@@ -252,12 +264,12 @@ function generateJson() {
 
     for (const tab of tabsContainer.children) {
         const tabTitle = tab.querySelector("input[type=text]").value;
-        json[tabTitle] = {};
 
         const rows = tab.querySelectorAll(".field-row");
         for (const row of rows) {
             const inputs = row.querySelectorAll("input");
-            json[tabTitle][inputs[0].value] = inputs[1].value;
+            const key = `${tabTitle}.${inputs[0].value}`;
+            json[key] = inputs[1].value;
         }
     }
 
@@ -265,21 +277,20 @@ function generateJson() {
 }
 
 
+
 jsonFileInput.addEventListener("change", (event) => {
 const file = event.target.files[0];
 const reader = new FileReader();
 reader.onload = (e) => {
-try {
-    const json = JSON.parse(e.target.result);
+    try {
+        const json = JSON.parse(e.target.result);
 
-    const isFormatValid = Object.values(json).every(
-        (value) =>
-            typeof value === "object" &&
-            Object.values(value).every((v) => typeof v === "string")
-    );
-    if (!isFormatValid) {
-        throw new Error("Invalid JSON format");
-    }
+        const isFormatValid = Object.values(json).every(
+            (value) => typeof value === "string"
+        );
+        if (!isFormatValid) {
+            throw new Error("Invalid JSON format");
+        }
 
     if (
         confirm(
@@ -349,13 +360,9 @@ function correctSpelling() {
 
     for (let input of translationInputs) {
         let value = input.value.toLowerCase();
-
-        // Encuentra el primer carácter alfabético y conviértelo a mayúsculas
         value = value.replace(/([a-z])/, function(match) {
             return match.toUpperCase();
         });
-
-        // Asegúrate de que todas las palabras después de los signos de puntuación comiencen con mayúsculas
         value = value.replace(/([.!?])\s*(\w)/g, function(match, punctuation, letter) {
             return punctuation + " " + letter.toUpperCase();
         });
@@ -363,3 +370,10 @@ function correctSpelling() {
         input.value = value;
     }
 }
+
+window.addEventListener('beforeunload', (event) => {
+    // Cancela el evento tal como estándares modernos requieren
+    event.preventDefault();
+    // Chrome requiere que se establezca el valor de returnValue
+    event.returnValue = '';
+});
