@@ -33,9 +33,10 @@
 }
 
 .table-cell {
-    background-color: #f2f2f2;
-    border: 2px solid #ccc;
+    background-color: #232323;
+    border: 2px solid #1c1c1c;
     padding: 8px;
+    border-radius: 10px;
 }
 
 
@@ -71,12 +72,12 @@
     background-color: white;
     color: red;
     font-size: 16px;
-    width: 3rem;
-    margin-right: 10px;
-    margin-left: 20px;
+    width: 2rem;
+    margin-right: 2px;
+    margin-left: 2px;
   }
 
-  
+
   .copy-row-btn {
     border: none;
     cursor: pointer;
@@ -88,24 +89,17 @@
   }
   
 
-
-
-
-
 .table-row {
     display: flex;
     align-items: center;
     margin-bottom: 25px;
     margin-right: 5px;
     transition: transform 0.2s ease-in-out;
+    border-radius: 10px;
   }
   
   
-  .table-row:hover {
-    background-color: #f0f0f0;
-    cursor: pointer;
-  }
-  
+
   
   .custom-row {
     width: fit-content;
@@ -137,14 +131,11 @@
     background-color: #333;
 }
 
-.dark-mode .field-row:hover,
-.dark-mode .custom-row:hover {
-    background-color: #3a3a3a;
-}
+
 
 .move-row-btn{
-margin-left: 10px;
-width: 40px;
+margin-left: 3px;
+width: 30px;
 
 }
 
@@ -172,16 +163,16 @@ button:hover {
 
 .table-cell,
 textarea {
-  border: 1px solid #ccc;
+  border: 2px solid #222222;
 }
+
+
 
 .dark-mode .table-cell,
-.dark-mode input[type="text"],
+.dark-mode input[type="input"],
 .dark-mode textarea {
-  border-color: #444;
+  border-color: #2828286f;
 }
-
-
 
 #toggleDarkMode {
     background-color: transparent;
@@ -211,7 +202,7 @@ textarea {
   }
   
   .field-row input[type="text"]:nth-child(1) {
-    flex: 0 0 35%;
+    flex: 0 0 65%;
     margin-right: 35px;
     margin-left: 15px;
     margin-top: 15px;
@@ -220,12 +211,12 @@ textarea {
   }
   
   .field-row input[type="text"]:nth-child(2) {
-    flex: 0 0 10%;
-    margin-right: 15px;
-    margin-left: 15px;
+    width: 7rem;
+    margin-right: 12px;
+    margin-left: 13px;
     margin-top: 15px;
     margin-bottom: 10px;
-    border-radius: 5px;
+    border-radius: 6px 6px 6px 16px;
   }
   
   .form-group {
@@ -256,11 +247,13 @@ textarea {
   
   #fileNameInput {
     width: 100%;
-    padding-left: 20px;
-    padding-right: 60px;
+    padding-left: 15px;
+    padding-right: 18px;
     border-radius: 10px;
-    margin-right: 55%;
+    margin-right: 77%;
     margin-bottom: 20px;
+    border-radius: 20px;
+    border-color: #222;
   }
   
 
@@ -367,11 +360,9 @@ input[type="file"] {
     padding: 30px;
   }
   
-  .field-row.table-row:hover {
-    border-radius: 10px;
-  }
+
   
-  input[type="text"][placeholder="Nombre de la pestaña"] {
+  input[type="text"][placeholder="Clave (Texto inicial)"] {
     margin-bottom: 30px;
     padding: 6px;
     border: 4px;
@@ -394,21 +385,21 @@ input[type="file"] {
 }
 
 .modern-button {
-  background-color: #4CAF50; /* Green background */
-  border: none; /* Remove borders */
-  color: white; /* White text */
-  padding: 15px 32px; /* Some padding */
-  text-align: center; /* Centered text */
-  text-decoration: none; /* Remove underline */
+  background-color: #4CAF50;
+  border: none; 
+  color: white;
+  padding: 15px 32px; 
+  text-align: center;
+  text-decoration: none; 
   display: inline-block;
   font-size: 16px;
   margin: 4px 2px;
   cursor: pointer;
-  transition-duration: 0.4s; /* Transition effects */
-  border-radius: 12px; /* Rounded corners */
+  transition-duration: 0.4s;
+  border-radius: 12px;
 }
 
-/* Change background color of the button when you hover over it */
+
 .modern-button:hover {
   background-color: #45a049;
 }
@@ -440,9 +431,119 @@ input[type="file"] {
   
 }
 
-
 .toggle-all-btn {
     display: block;
     margin-bottom: 10px;
+}
+
+
+button {
+  background-color: #4CAF50; 
+  border: none; 
+  color: white; 
+  padding: 12px 18px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px; 
+  margin: 4px 2px; 
+  cursor: pointer;
+  transition-duration: 0.4s;
+  border-radius: 12px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+button i {
+  margin-right: 5px;
+}
+.hidden {
+  display: none !important;
+}
+
+.sub-row {
+  padding: 8px;
+  font-size: 12px; 
+  margin-top: 10px; 
+  margin-bottom: 15px; 
+}
+
+textarea {
+  resize: none;
+  width: 100%;
+
+}
+
+.toggleHeightBtn {
+
+  margin-right: 3px;
+  margin-left: 15px;
+  width: 30px;
+}
+
+
+
+textarea.full-width {
+  width: 100%;
+}
+
+/* Estilo para la barra de desplazamiento */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  
+}
+
+::-webkit-scrollbar-track {
+  background: #35353505; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #292929; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3c3c3c; 
+}
+
+
+textarea:focus,
+input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+
+
+.flex-container {
+  display: flex;
+  justify-content: flex-start; /* Alinea los elementos al inicio */
+}
+
+.variables {
+  font-size: 0.8em;
+  color: #d04200; /* Color para las variables */
+  margin: 3rem 2rem 0 12rem; /* Agrega un margen derecho de 2rem (o ajusta según sea necesario) */
+  padding-bottom: 2rem;
+}
+
+.commands {
+  font-size: 0.8em;
+  color: #4581ba; /* Color para los comandos */
+  margin: 3rem 0 0 0;
+  padding-bottom: 2rem;
+}
+
+.field-container {
+  transition: background-color 0.2s ease-in-out;
+  padding: 10px; /* Agrega un poco de espacio alrededor del contenido del contenedor */
+  border-radius: 10px;
+}
+
+.field-container:hover {
+  background-color: #2f2f2f36;
+  border-radius: 10px;
 }
 

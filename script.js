@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", function() {
     event.preventDefault();
     event.returnValue = '';
 
-
     function toggleDarkMode() {
         const body = document.body;
         body.classList.toggle("dark-mode");
@@ -50,6 +49,7 @@ const jsonFileInput = document.getElementById("jsonFileInput");
 const tabsContainer = document.getElementById("tabs");
 const jsonResult = document.getElementById("jsonResult");
 
+
 function loadJson(json) {
     tabsContainer.innerHTML = "";
     
@@ -60,7 +60,7 @@ function loadJson(json) {
         if (!(tabName in tabsData)) {
             tabsData[tabName] = {};
         }
-        tabsData[tabName][fieldName] = json[key];
+        tabsData[tabName][fieldName] = json[key].replace(/\\\\\\\\/g, '\\\\');
     }
 
     for (const tabName in tabsData) {
@@ -75,32 +75,108 @@ function loadJson(json) {
             fieldRow.querySelector(".row-number").textContent = rowNum;
 
             fieldRow.querySelector("input:nth-child(2)").value = fieldKey;
-            fieldRow.querySelector("input:nth-child(3)").value = tabContent[fieldKey];
+            const textarea = fieldRow.querySelector("textarea");
+            textarea.value = tabContent[fieldKey];
+
+            const variablesDiv = fieldRow.parentElement.querySelector(".variables-div");
+          
+            updateVariables(variablesDiv, textarea.value);
             rowNum++; 
+            
         }
     }
 
     updateFileName(jsonFileInput.value);
 }
 
-
-
 function addNewField(tab) {
+    const fieldContainer = document.createElement("div");
+    fieldContainer.className = "field-container";
+
+    const variablesDiv = document.createElement("div");
+    variablesDiv.className = "variables-div"; 
+
+    fieldContainer.appendChild(variablesDiv);
+
     const newRow = document.createElement("div");
     newRow.className = "field-row table-row";
     const rowCount = tab.querySelectorAll('.field-row').length + 1;
     newRow.innerHTML = `
-    <div class="table-cell row-number">${rowCount}</div>
-    <input type="text" class="table-cell" placeholder="SubCategoría" oninput="formatSubcategory(this)">
-    <input type="text" class="table-cell" placeholder="Traducción" oninput="capitalizeFirstLetter(this)">
-    <button class="move-row-btn table-cell" onclick="moveRowPrompt(this)"><i class="fas fa-retweet"></i></button>
-    <button class="delete-row-btn table-cell" onclick="confirmRemoveField(this)">X</button>
-    <button class="copy-row-btn table-cell" onclick="copyField(this)"><i class="far fa-copy"></i></button>
+        <div class="table-cell row-number">${rowCount}</div>
+        <input type="text" class="table-cell" placeholder="SubCategoría" oninput="formatSubcategory(this)">
+        <textarea class="table-cell full-width" placeholder="Traducción" oninput="handleTranslationChange(this); autoExpandTextarea(this)"></textarea>
+        <button class="toggleHeightBtn table-cell"><i class="fas fa-expand-arrows-alt"></i></button>
+        <button class="move-row-btn table-cell" onclick="moveRowPrompt(this)"><i class="fas fa-retweet"></i></button>
+        <button class="delete-row-btn table-cell" onclick="confirmRemoveField(this)">X</button>
+        <button class="copy-row-btn table-cell" onclick="copyField(this)"><i class="far fa-copy"></i></button>
+        <button class="reveal-btn table-cell" onclick="revealButtons(this)"><i class="fas fa-eye"></i></button>
     `;
-    tab.querySelector(".tab-content").appendChild(newRow);
+
+    const toggleHeightBtn = newRow.querySelector('.toggleHeightBtn');
+    let isExpanded = true;
+
+    const translationTextarea = newRow.querySelector('textarea');
+    translationTextarea.style.whiteSpace = 'nowrap';
+    translationTextarea.style.height = 'auto';
+
+    toggleHeightBtn.addEventListener('click', function () {
+        if (isExpanded) {
+            translationTextarea.style.height = '10rem';
+            translationTextarea.style.whiteSpace = 'pre-wrap';
+            isExpanded = false;
+        } else {
+            translationTextarea.style.whiteSpace = 'nowrap';
+            translationTextarea.style.height = 'auto';
+            isExpanded = true;
+        }
+    });
+
+    translationTextarea.addEventListener('click', function () {
+        if (!isExpanded) {
+            translationTextarea.style.height = '10rem';
+            translationTextarea.style.whiteSpace = 'pre-wrap';
+            isExpanded = true;
+        }
+    });
+
+    translationTextarea.addEventListener('blur', function () {
+        if (isExpanded) {
+            translationTextarea.style.whiteSpace = 'nowrap';
+            translationTextarea.style.height = 'auto';
+            isExpanded = false;
+        }
+    });
+
+    fieldContainer.appendChild(newRow);
+
+    const subRow = document.createElement('div');
+    subRow.className = "sub-row"; 
+
+    fieldContainer.appendChild(subRow);
+
+    translationTextarea.oninput = function() {
+        updateVariables(variablesDiv, this.value);
+        capitalizeFirstLetter(this);
+    };
+
+    subRow.classList.add('show'); 
+
+    const tabContent = tab.querySelector(".tab-content");
+    tabContent.appendChild(fieldContainer);
+
     updateRowNumbers(tab);
     return newRow;
 }
+
+
+
+
+
+function autoExpandTextarea(textarea) {
+    const lines = textarea.value.split('\n');
+    textarea.rows = lines.length;
+}
+
 
 
 function toggleSubpage(btn) {
@@ -109,8 +185,6 @@ function toggleSubpage(btn) {
     content.style.display = isExpanded ? 'none' : 'block';
     btn.querySelector("i").className = isExpanded ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
 }
-
-
 
 function moveRowPrompt(btn) {
     const row = btn.parentElement;
@@ -156,7 +230,6 @@ function moveRowPrompt(btn) {
 }
 
 
-
 function copyField(btn) {
     const fieldRow = btn.parentElement;
     const tabTitle = fieldRow.closest('.tab').querySelector('input[type="text"]').value;
@@ -164,7 +237,7 @@ function copyField(btn) {
     const copyText = `\${${tabTitle}.${subcategory}}`;
     navigator.clipboard.writeText(copyText);
     const originalColor = fieldRow.style.backgroundColor;
-    fieldRow.style.backgroundColor = 'lightgreen';
+    fieldRow.style.backgroundColor = '#286b41';
     setTimeout(() => {
         fieldRow.style.backgroundColor = originalColor;
     }, 95);
@@ -211,7 +284,7 @@ function addNewTab() {
 
     const tabTitle = document.createElement("input");
     tabTitle.type = "text";
-    tabTitle.placeholder = "Nombre de la pestaña";
+    tabTitle.placeholder = "Clave (Texto inicial)";
     tabTitle.oninput = function() { formatTabTitle(this); };
 
     const tabContent = document.createElement("div");
@@ -259,6 +332,7 @@ function addNewTab() {
 }
 
 
+
 function generateJson() {
     const json = {};
 
@@ -269,7 +343,8 @@ function generateJson() {
         for (const row of rows) {
             const inputs = row.querySelectorAll("input");
             const key = `${tabTitle}.${inputs[0].value}`;
-            json[key] = inputs[1].value;
+            const value = row.querySelector("textarea").value;
+            json[key] = value;
         }
     }
 
@@ -277,36 +352,54 @@ function generateJson() {
 }
 
 
-
 jsonFileInput.addEventListener("change", (event) => {
-const file = event.target.files[0];
-const reader = new FileReader();
-reader.onload = (e) => {
-    try {
-        const json = JSON.parse(e.target.result);
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const raw = e.target.result;
+            const json = JSON.parse(raw);
 
-        const isFormatValid = Object.values(json).every(
-            (value) => typeof value === "string"
-        );
-        if (!isFormatValid) {
-            throw new Error("Invalid JSON format");
+            for (let key in json) {
+                json[key] = json[key].replace(/\\\\/g, "\\\\\\\\");
+            }
+
+            if (
+                confirm(
+                    "Este archivo se importará y reemplazará los datos de esta página. ¿Continuar?"
+                )
+            ) {
+                loadJson(json);
+                updateFileName(file.name);
+            }
+        } catch (error) {
+            alert("Error al leer el archivo: " + error.message);
         }
-
-    if (
-        confirm(
-            "Este archivo es aceptable, se importará y reemplazarán los datos de esta página. ¿Continuar?"
-        )
-    ) {
-        loadJson(json);
-        updateFileName(file.name);
-    }
-} catch (error) {
-    alert("Este archivo no es compatible.");
-}
-};
-reader.readAsText(file);
+    };
+    reader.readAsText(file);
 });
 
+function handleFileSelect(evt) {
+    var file = evt.target.files[0];
+    if (!file) return;
+  
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var contents = e.target.result;
+      var json = JSON.parse(contents);
+      var templateLiterals = JSON.stringify(json, null, 2)
+        .replace(/"\\\\/g, '`\\\\')
+        .replace(/\\\\n"/g, '\\\\n`')
+        .replace(/"$/g, '`')
+        .replace(/^"/g, '`');
+      var templateLiteralJson = JSON.parse(templateLiterals);
+      fillTableFromJson(templateLiteralJson);
+    };
+    reader.readAsText(file);
+  }
+  
+
+  
 
 function updateFileName(name) {
 fileNameInput.value = name.replace(/\.[^/.]+$/, "");
@@ -314,17 +407,21 @@ fileNameInput.value = name.replace(/\.[^/.]+$/, "");
 
 
 function downloadJson(json, fileName) {
-const data = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
-const url = URL.createObjectURL(data);
-
-const link = document.createElement("a");
-link.href = url;
-link.download = `${fileName}.json`;
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-URL.revokeObjectURL(url);
+    let jsonString = JSON.stringify(json, null, 2);
+    jsonString = jsonString.replace(/\\\\\\\\/g, "\\\\");
+    const data = new Blob([jsonString], {type: "application/json"});
+    const url = URL.createObjectURL(data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${fileName}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
+
+
+
 
 function saveChanges() {
     const json = generateJson();
@@ -347,33 +444,129 @@ removeField(btn);
 }
 }
 
-function updateRowNumbers(tab) {
-    const rows = tab.querySelectorAll('.field-row');
-    for (let i = 0; i < rows.length; i++) {
-        const rowNumberCell = rows[i].querySelector('.row-number');
-        rowNumberCell.textContent = i + 1;
-    }
-}
 
 function correctSpelling() {
-    const translationInputs = document.querySelectorAll('input[type="text"]:nth-child(3)');
+    const translationInputs = document.querySelectorAll('textarea');
 
     for (let input of translationInputs) {
         let value = input.value.toLowerCase();
-        value = value.replace(/([a-z])/, function(match) {
-            return match.toUpperCase();
-        });
-        value = value.replace(/([.!?])\s*(\w)/g, function(match, punctuation, letter) {
-            return punctuation + " " + letter.toUpperCase();
-        });
-
-        input.value = value;
+        let parts = value.split(/(\$\{[^}]*\})/g);
+        for (let i = 0; i < parts.length; i++) {
+            if (!parts[i].startsWith("${")) { 
+                parts[i] = parts[i].replace(/([a-z])/, function(match) {
+                    return match.toUpperCase();
+                });
+                parts[i] = parts[i].replace(/([.!?])\s*(\w)/g, function(match, punctuation, letter) {
+                    return punctuation + " " + letter.toUpperCase();
+                });
+            }
+        }
+        input.value = parts.join(""); 
     }
 }
 
+
+
 window.addEventListener('beforeunload', (event) => {
-    // Cancela el evento tal como estándares modernos requieren
     event.preventDefault();
-    // Chrome requiere que se establezca el valor de returnValue
     event.returnValue = '';
 });
+
+
+function revealButtons(btn) {
+   
+    const fieldRow = btn.parentElement;
+    const translationInput = fieldRow.querySelector("textarea");
+
+    const buttonData = [
+        { insertText: "<b> </b>", iconClass: "fas fa-bold", description: "Texto en negrita" },
+        { insertText: "<i> </i>", iconClass: "fas fa-italic", description: "Texto en cursiva" },
+        { insertText: "<left> </left>", iconClass: "fas fa-align-left", description: "Alinear a la izquierda" },
+        { insertText: "<center> </center>", iconClass: "fas fa-align-center", description: "Alinear al centro" },
+        { insertText: "<right> </right>", iconClass: "fas fa-align-right", description: "Alinear a la derecha" },
+        { insertText: "<WordWrap> </WordWrap>", iconClass: "fas fa-text-width", description: "Ajuste de línea de texto" },
+        { insertText: "<br>", iconClass: "fas fa-level-down-alt", description: "Salto de línea" },
+        { insertText: "<line break>", iconClass: "fas fa-level-down-alt", description: "Salto de línea" },
+        { insertText: "\\picture<x>", iconClass: "fas fa-image", description: "Insertar imagen" },
+        { insertText: "\\CenterPicture<x>", iconClass: "fas fa-image", description: "Insertar imagen centrada" },
+        { insertText: "\\Wait[x]", iconClass: "fas fa-hourglass-half", description: "Esperar [x] segundos" },
+        { insertText: "<Help> </Help>", iconClass: "fas fa-question-circle", description: "Ayuda" },
+        { insertText: "<Up Button>", iconClass: "fas fa-arrow-up", description: "Botón de flecha hacia arriba" },
+        { insertText: "<Left Button>", iconClass: "fas fa-arrow-left", description: "Botón de flecha hacia la izquierda" },
+        { insertText: "<Right Button>", iconClass: "fas fa-arrow-right", description: "Botón de flecha hacia la derecha" },
+        { insertText: "<Down Button>", iconClass: "fas fa-arrow-down", description: "Botón de flecha hacia abajo" },
+        { insertText: "<Ok Button>", iconClass: "fas fa-check", description: "Botón de aceptar" },
+        { insertText: "<Cancel Button>", iconClass: "fas fa-times", description: "Botón de cancelar" },
+        { insertText: "<Shift Button>", iconClass: "fas fa-exchange-alt", description: "Botón de cambio" },
+        { insertText: "<Menu Button>", iconClass: "fas fa-bars", description: "Botón de menú" },
+        { insertText: "<Page Up Button>", iconClass: "fas fa-chevron-circle-up", description: "Botón de página arriba" },
+        { insertText: "<Page Down Button>", iconClass: "fas fa-chevron-circle-down", description: "Botón de página abajo" },
+        { insertText: "\\FS[x]", iconClass: "fas fa-text-height", description: "Tamaño de fuente [x]" },
+        { insertText: "\\CommonEvent[x]", iconClass: "fas fa-cogs", description: "Evento común [x]" },
+        { insertText: "\\Wait[x]", iconClass: "fas fa-hourglass-half", description: "Esperar [x] segundos" },
+        { insertText: "<Next Page>", iconClass: "fas fa-forward", description: "Siguiente página" },
+        { insertText: "<Auto>", iconClass: "fas fa-car-side", description: "Automático" },
+        { insertText: "<Auto Width>", iconClass: "fas fa-arrows-alt-h", description: "Ancho automático" },
+        { insertText: "<Auto Height>", iconClass: "fas fa-arrows-alt-v", description: "Altura automática" },
+        { insertText: "<Auto Actor: x>", iconClass: "fas fa-user", description: "Actor automático: [x]" },
+        { insertText: "<Auto Party: x>", iconClass: "fas fa-users", description: "Grupo automático: [x]" },
+        { insertText: "<Auto Player>", iconClass: "fas fa-gamepad", description: "Jugador automático" },
+        { insertText: "<Auto Event: x>", iconClass: "fas fa-calendar-alt", description: "Evento automático: [x]" },
+        { insertText: "<Auto Enemy: x>", iconClass: "fas fa-skull-crossbones", description: "Enemigo automático: [x]" },
+    ];
+    
+    
+    const subRow = fieldRow.nextElementSibling;
+
+
+    if (subRow.classList.contains('hidden')) {
+
+        subRow.classList.remove('hidden');
+
+        subRow.innerHTML = '';
+
+        for (const btnData of buttonData) {
+            const insertButton = document.createElement('button');
+        
+            const icon = document.createElement('i');
+            icon.className = btnData.iconClass;
+            insertButton.appendChild(icon);
+            insertButton.title = btnData.description;
+        
+            insertButton.onclick = () => {
+                translationInput.value += btnData.insertText;
+                handleTranslationChange(translationInput);
+            };
+            subRow.appendChild(insertButton);
+        }
+        
+    } else {
+   
+        subRow.classList.add('hidden');
+    }
+}
+
+
+function updateVariables(variablesDiv, text) {
+    const regex1 = /\\\\[^\s]+/g;
+    const regex2 = /\$\{[^\}]+\}/g;
+    const matches1 = text.match(regex1);
+    const matches2 = text.match(regex2);
+    let output = '<div class="variables">Variables Utilizadas: ';
+    if (matches2) {
+        output += matches2.join(', ');
+    } else {
+        output += 'Ninguna';
+    }
+    output += '</div><div class="commands">Comandos Utilizados: ';
+    if (matches1) {
+        output += matches1.join(', ');
+    } else {
+        output += 'Ninguno';
+    }
+    output += '</div>';
+    variablesDiv.innerHTML = output;
+    variablesDiv.className = "variables-div hidden flex-container";
+
+    variablesDiv.classList.remove('hidden');
+}
